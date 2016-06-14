@@ -7362,11 +7362,21 @@ var _elm_lang$core$Bitwise$and = _elm_lang$core$Native_Bitwise.and;
 
 var _user$project$Polyline$encode = F2(
 	function (coordinates, precision) {
-		var pair = A2(_elm_lang$core$List$take, 2, coordinates);
+		var factor = Math.pow(10, precision);
+		var coords = _elm_lang$core$List$concat(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$core$Native_List.fromArray(
+						[0, 0])
+					]),
+					coordinates
+				]));
+		var pair = A2(_elm_lang$core$List$take, 2, coords);
 		var a = _elm_lang$core$List$head(pair);
 		var b = _elm_lang$core$List$head(
 			_elm_lang$core$List$reverse(pair));
-		var factor = Math.pow(10, precision);
 		var _p0 = a;
 		if (_p0.ctor === 'Nothing') {
 			return '';
