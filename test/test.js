@@ -7360,6 +7360,45 @@ var _elm_lang$core$Bitwise$xor = _elm_lang$core$Native_Bitwise.xor;
 var _elm_lang$core$Bitwise$or = _elm_lang$core$Native_Bitwise.or;
 var _elm_lang$core$Bitwise$and = _elm_lang$core$Native_Bitwise.and;
 
+var _user$project$Polyline$decodeInner = F5(
+	function (str, precision, result, shift, $byte) {
+		var parts = _elm_lang$core$String$uncons(str);
+		var factor = Math.pow(10, precision);
+		var _p0 = parts;
+		if (_p0.ctor === 'Nothing') {
+			return result;
+		} else {
+			var _p1 = _p0._0._0;
+			return (_elm_lang$core$Native_Utils.cmp(
+				_elm_lang$core$Char$toCode(_p1) - 63,
+				32) > -1) ? result : (A5(
+				_user$project$Polyline$decodeInner,
+				_p0._0._1,
+				precision,
+				A2(
+					_elm_lang$core$Bitwise$shiftLeft,
+					A2(
+						_elm_lang$core$Bitwise$or,
+						result,
+						_elm_lang$core$Char$toCode(_p1) - A2(_elm_lang$core$Bitwise$and, 63, 31)),
+					shift),
+				shift + 5,
+				_elm_lang$core$Char$toCode(_p1)) - 63);
+		}
+	});
+var _user$project$Polyline$decodeChange = function (result) {
+	return _elm_lang$core$Native_Utils.eq(
+		A2(_elm_lang$core$Bitwise$and, result, 1),
+		0) ? _elm_lang$core$Basics$toFloat(
+		_elm_lang$core$Bitwise$complement(
+			A2(_elm_lang$core$Bitwise$shiftRight, result, 1))) : _elm_lang$core$Basics$toFloat(
+		A2(_elm_lang$core$Bitwise$shiftRight, result, 1));
+};
+var _user$project$Polyline$decode = F2(
+	function (str, precision) {
+		return _user$project$Polyline$decodeChange(
+			A5(_user$project$Polyline$decodeInner, str, precision, 0, 0, 0));
+	});
 var _user$project$Polyline$encodeCoordinateShift = function (coordinate) {
 	return (_elm_lang$core$Native_Utils.cmp(coordinate, 32) > -1) ? A2(
 		_elm_lang$core$Basics_ops['++'],

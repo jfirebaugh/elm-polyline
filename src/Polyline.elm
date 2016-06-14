@@ -48,3 +48,35 @@ encode coordinates precision =
     List.foldr (++) "" (List.map2 (encodeCoordinates (10 ^ precision))
       (List.concat [[[0, 0]], coordinates])
       (List.concat [coordinates, [[0/0, 0/0]]]))
+
+
+decode : String -> Int -> Float
+decode str precision =
+  decodeChange (decodeInner str precision 0 0 0)
+
+decodeChange : Int -> Float
+decodeChange result =
+  if (result `and` 1) == 0 then
+     Basics.toFloat (complement (result `shiftRight` 1))
+  else
+     Basics.toFloat (result `shiftRight` 1)
+
+decodeInner : String -> Int -> Int -> Int -> Int -> Int
+decodeInner str precision result shift byte =
+  let
+    factor = 10 ^ precision
+    parts = String.uncons str
+  in
+     case parts of
+       Nothing ->
+         result
+       Just (char, rest) ->
+         if (Char.toCode char) - 63 >= 0x20 then
+            result
+         else
+           (decodeInner
+             rest
+             precision 
+             (result `or` ((Char.toCode char) - 63 `and` 0x1f) `shiftLeft` shift)
+             (shift + 5)
+             (Char.toCode char) - 63)
