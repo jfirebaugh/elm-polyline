@@ -45,7 +45,11 @@ encode coordinates precision =
   let
     coords = List.concat [[[0, 0]], coordinates]
     factor = 10 ^ precision
-  in
+    -- here's where things get tricky: List (List.number) is our input
+    -- and List.head returns a Maybe, and List.reverse requires a List,
+    -- so it's hard to see how we'd get Just values from first, second
+    -- and their values without nested case statements
     first = List.head coords
     second = List.head (List.tail coords)
+  in
     encodeCoordinates coords ""
