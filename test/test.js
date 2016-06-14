@@ -7360,33 +7360,79 @@ var _elm_lang$core$Bitwise$xor = _elm_lang$core$Native_Bitwise.xor;
 var _elm_lang$core$Bitwise$or = _elm_lang$core$Native_Bitwise.or;
 var _elm_lang$core$Bitwise$and = _elm_lang$core$Native_Bitwise.and;
 
-var _user$project$Polyline$encode = F2(
-	function (coordinates, precision) {
-		var factor = Math.pow(10, precision);
-		var coords = _elm_lang$core$List$concat(
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$core$Native_List.fromArray(
-						[0, 0])
-					]),
-					coordinates
-				]));
-		var pair = A2(_elm_lang$core$List$take, 2, coords);
-		var a = _elm_lang$core$List$head(pair);
-		var b = _elm_lang$core$List$head(
-			_elm_lang$core$List$reverse(pair));
-		var _p0 = a;
-		if (_p0.ctor === 'Nothing') {
+var _user$project$Polyline$encodeCoordinateShift = function (coordinate) {
+	return (_elm_lang$core$Native_Utils.cmp(coordinate, 32) > -1) ? A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$String$fromChar(
+			_elm_lang$core$Char$fromCode(
+				A2(
+					_elm_lang$core$Bitwise$or,
+					32,
+					A2(_elm_lang$core$Bitwise$and, coordinate, 31)) + 63)),
+		_user$project$Polyline$encodeCoordinateShift(
+			A2(_elm_lang$core$Bitwise$shiftRight, coordinate, 5))) : _elm_lang$core$String$fromChar(
+		_elm_lang$core$Char$fromCode(coordinate + 63));
+};
+var _user$project$Polyline$encodeCoordinate = F3(
+	function (factor, previous, current) {
+		if (_elm_lang$core$Basics$isNaN(current)) {
 			return '';
 		} else {
-			return 'hi';
+			var p = _elm_lang$core$Basics$round(previous * factor);
+			var c = _elm_lang$core$Basics$round(current * factor);
+			var shifted = A2(_elm_lang$core$Bitwise$shiftLeft, c - p, 1);
+			var coordinate = (_elm_lang$core$Native_Utils.cmp(c - p, 0) < 0) ? _elm_lang$core$Bitwise$complement(shifted) : shifted;
+			return _user$project$Polyline$encodeCoordinateShift(coordinate);
 		}
 	});
-var _user$project$Polyline$encodeCoordinate = F3(
-	function (current, previous, factor) {
-		return 'hi';
+var _user$project$Polyline$encodeCoordinates = F3(
+	function (factor, a, b) {
+		return A3(
+			_elm_lang$core$List$foldr,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$Basics_ops['++'], x, y);
+				}),
+			'',
+			A3(
+				_elm_lang$core$List$map2,
+				_user$project$Polyline$encodeCoordinate(factor),
+				a,
+				b));
+	});
+var _user$project$Polyline$encode = F2(
+	function (coordinates, precision) {
+		return _elm_lang$core$List$isEmpty(coordinates) ? '' : A3(
+			_elm_lang$core$List$foldr,
+			F2(
+				function (x, y) {
+					return A2(_elm_lang$core$Basics_ops['++'], x, y);
+				}),
+			'',
+			A3(
+				_elm_lang$core$List$map2,
+				_user$project$Polyline$encodeCoordinates(
+					Math.pow(10, precision)),
+				_elm_lang$core$List$concat(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$core$Native_List.fromArray(
+								[0, 0])
+							]),
+							coordinates
+						])),
+				_elm_lang$core$List$concat(
+					_elm_lang$core$Native_List.fromArray(
+						[
+							coordinates,
+							_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$core$Native_List.fromArray(
+								[0 / 0, 0 / 0])
+							])
+						]))));
 	});
 
 var _user$project$Test_Polyline$tests = A2(
@@ -7399,6 +7445,7 @@ var _user$project$Test_Polyline$tests = A2(
 			'has length',
 			A2(
 				_elm_community$elm_test$ElmTest$assertEqual,
+				'_ibE_seK_seK_seK',
 				A2(
 					_user$project$Polyline$encode,
 					_elm_lang$core$Native_List.fromArray(
@@ -7408,19 +7455,43 @@ var _user$project$Test_Polyline$tests = A2(
 							_elm_lang$core$Native_List.fromArray(
 							[3, 4])
 						]),
-					6),
-				'hi')),
+					5))),
+			A2(
+			_elm_community$elm_test$ElmTest$test,
+			'has length',
+			A2(
+				_elm_community$elm_test$ElmTest$assertEqual,
+				'_p~iF~ps|U_ulLnnqC_mqNvxq`@',
+				A2(
+					_user$project$Polyline$encode,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$core$Native_List.fromArray(
+							[38.5, -120.2]),
+							_elm_lang$core$Native_List.fromArray(
+							[40.7, -120.95]),
+							_elm_lang$core$Native_List.fromArray(
+							[43.252, -126.453])
+						]),
+					5))),
 			A2(
 			_elm_community$elm_test$ElmTest$test,
 			'empty',
 			A2(
 				_elm_community$elm_test$ElmTest$assertEqual,
+				'',
 				A2(
 					_user$project$Polyline$encode,
 					_elm_lang$core$Native_List.fromArray(
 						[]),
-					6),
-				''))
+					6))),
+			A2(
+			_elm_community$elm_test$ElmTest$test,
+			'encodeCoordinateShift',
+			A2(
+				_elm_community$elm_test$ElmTest$assertEqual,
+				'vB',
+				_user$project$Polyline$encodeCoordinateShift(119)))
 		]));
 var _user$project$Test_Polyline$main = {
 	main: _elm_community$elm_test$ElmTest$runSuite(_user$project$Test_Polyline$tests)

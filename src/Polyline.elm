@@ -1,4 +1,4 @@
-module Polyline exposing (encode)
+module Polyline exposing (encode, encodeCoordinateShift, encodeCoordinate)
 
 {-| Polyline encoding
 
@@ -12,44 +12,39 @@ import String
 import Char
 import List
 
-encodeCoordinateShift : Int -> String -> String
-encodeCoordinateShift coordinate output =
-  if coordinate >= 0x20 then
-    (encodeCoordinateShift (coordinate `shiftRight` 5)
-      output ++ String.fromChar (Char.fromCode ((0x20 `or` (coordinate `and` 0x1f)) + 63)))
+encodeCoordinateShift : Int -> String
+encodeCoordinateShift coordinate =
+  if coordinate >= 32 then
+    (String.fromChar (Char.fromCode
+        ((32 `or` (coordinate `and` 0x1f)) + 63)))
+      ++ encodeCoordinateShift (coordinate `shiftRight` 5)
   else
-    output ++ String.fromChar (Char.fromCode (coordinate + 63))
+    String.fromChar (Char.fromCode (coordinate + 63))
 
 encodeCoordinate : Float -> Float -> Float -> String
-encodeCoordinate current previous factor =
-  let
-    c = round(current * factor)
-    p = round(previous * factor)
-    shifted = (c - p) `shiftLeft` 1
-    coordinate = if c - p < 0 then complement shifted else shifted
-  in
-    encodeCoordinateShift coordinate ""
+encodeCoordinate factor previous current =
+  if (Basics.isNaN current) then
+    ""
+  else
+    let
+      c = round(current * factor)
+      p = round(previous * factor)
+      shifted = (c - p) `shiftLeft` 1
+      coordinate = if c - p < 0 then complement shifted else shifted
+    in
+      encodeCoordinateShift coordinate
 
-encodeCoordinates : List (List number) -> String -> String
-encodeCoordinates coords output =
-  let
-  in
-    firstpair = List.take 2 coords
-    a1 = List.head firstpair `andThen` List.head
-    b1 = List.head firstpair `andThen` List.reverse `andThen` List.head
+encodeCoordinates : Float -> List Float -> List Float -> String
+encodeCoordinates factor a b =
+  List.foldr (++) "" (List.map2 (encodeCoordinate factor) a b)
 
 {-| Transforms a list of coordinates into an encoded polyline
 -}
-encode : List (List number) -> number -> String
+encode : List (List Float) -> Float -> String
 encode coordinates precision =
-  let
-    coords = List.concat [[[0, 0]], coordinates]
-    factor = 10 ^ precision
-    -- here's where things get tricky: List (List.number) is our input
-    -- and List.head returns a Maybe, and List.reverse requires a List,
-    -- so it's hard to see how we'd get Just values from first, second
-    -- and their values without nested case statements
-    first = List.head coords
-    second = List.head (List.tail coords)
-  in
-    encodeCoordinates coords ""
+  if List.isEmpty coordinates then
+    ""
+  else
+    List.foldr (++) "" (List.map2 (encodeCoordinates (10 ^ precision))
+      (List.concat [[[0, 0]], coordinates])
+      (List.concat [coordinates, [[0/0, 0/0]]]))
