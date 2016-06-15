@@ -10,16 +10,17 @@ import Bitwise exposing (..)
 import Maybe exposing (andThen)
 import String
 import Char
-import List
+import List.Extra as List
+
+stringFromCode : Int -> String
+stringFromCode code = String.fromChar (Char.fromCode code)
 
 encodeCoordinateShift : Int -> String
 encodeCoordinateShift coordinate =
   if coordinate >= 32 then
-    (String.fromChar (Char.fromCode
-        ((32 `or` (coordinate `and` 0x1f)) + 63)))
+    (stringFromCode ((32 `or` (coordinate `and` 0x1f)) + 63))
       ++ encodeCoordinateShift (coordinate `shiftRight` 5)
-  else
-    String.fromChar (Char.fromCode (coordinate + 63))
+  else stringFromCode (coordinate + 63)
 
 encodeCoordinate : Float -> Float -> Float -> String
 encodeCoordinate factor previous current =
@@ -45,9 +46,8 @@ encode coordinates precision =
   if List.isEmpty coordinates then
     ""
   else
-    List.foldr (++) "" (List.map2 (encodeCoordinates (10 ^ precision))
-      (List.concat [[[0, 0]], coordinates])
-      (List.concat [coordinates, [[0/0, 0/0]]]))
+    List.foldr (++) "" (List.map (encodeCoordinates (10 ^ precision))
+      (List.zip (List.concat [[[0, 0]], coordinates]) coordinates))
 
 
 decode : String -> Int -> Maybe Float
