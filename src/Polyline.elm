@@ -50,9 +50,12 @@ encode coordinates precision =
       (List.concat [coordinates, [[0/0, 0/0]]]))
 
 
-decode : String -> Int -> Float
+decode : String -> Int -> Maybe Float
 decode str precision =
-  decodeChange (decodeInner str precision 0 0 0)
+  case (decodeInner str precision 0 0 0) of
+    Nothing -> Nothing
+    Just (result, res) ->
+      Just (decodeChange result)
 
 decodeChange : Int -> Float
 decodeChange result =
@@ -61,7 +64,7 @@ decodeChange result =
   else
      Basics.toFloat (result `shiftRight` 1)
 
-decodeInner : String -> Int -> Int -> Int -> Int -> Int
+decodeInner : String -> Int -> Int -> Int -> Int -> Maybe (Int, String)
 decodeInner str precision result shift byte =
   let
     factor = 10 ^ precision
@@ -69,14 +72,14 @@ decodeInner str precision result shift byte =
   in
      case parts of
        Nothing ->
-         result
+         Nothing
        Just (char, rest) ->
          if (Char.toCode char) - 63 >= 0x20 then
-            result
+           Just (result, rest)
          else
            (decodeInner
              rest
              precision 
              (result `or` ((Char.toCode char) - 63 `and` 0x1f) `shiftLeft` shift)
              (shift + 5)
-             (Char.toCode char) - 63)
+             ((Char.toCode char) - 63))

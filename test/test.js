@@ -7362,28 +7362,41 @@ var _elm_lang$core$Bitwise$and = _elm_lang$core$Native_Bitwise.and;
 
 var _user$project$Polyline$decodeInner = F5(
 	function (str, precision, result, shift, $byte) {
-		var parts = _elm_lang$core$String$uncons(str);
-		var factor = Math.pow(10, precision);
-		var _p0 = parts;
-		if (_p0.ctor === 'Nothing') {
-			return result;
-		} else {
-			var _p1 = _p0._0._0;
-			return (_elm_lang$core$Native_Utils.cmp(
-				_elm_lang$core$Char$toCode(_p1) - 63,
-				32) > -1) ? result : (A5(
-				_user$project$Polyline$decodeInner,
-				_p0._0._1,
-				precision,
-				A2(
-					_elm_lang$core$Bitwise$shiftLeft,
-					A2(
-						_elm_lang$core$Bitwise$or,
-						result,
-						_elm_lang$core$Char$toCode(_p1) - A2(_elm_lang$core$Bitwise$and, 63, 31)),
-					shift),
-				shift + 5,
-				_elm_lang$core$Char$toCode(_p1)) - 63);
+		decodeInner:
+		while (true) {
+			var parts = _elm_lang$core$String$uncons(str);
+			var factor = Math.pow(10, precision);
+			var _p0 = parts;
+			if (_p0.ctor === 'Nothing') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p2 = _p0._0._1;
+				var _p1 = _p0._0._0;
+				if (_elm_lang$core$Native_Utils.cmp(
+					_elm_lang$core$Char$toCode(_p1) - 63,
+					32) > -1) {
+					return _elm_lang$core$Maybe$Just(
+						{ctor: '_Tuple2', _0: result, _1: _p2});
+				} else {
+					var _v1 = _p2,
+						_v2 = precision,
+						_v3 = A2(
+						_elm_lang$core$Bitwise$shiftLeft,
+						A2(
+							_elm_lang$core$Bitwise$or,
+							result,
+							_elm_lang$core$Char$toCode(_p1) - A2(_elm_lang$core$Bitwise$and, 63, 31)),
+						shift),
+						_v4 = shift + 5,
+						_v5 = _elm_lang$core$Char$toCode(_p1) - 63;
+					str = _v1;
+					precision = _v2;
+					result = _v3;
+					shift = _v4;
+					$byte = _v5;
+					continue decodeInner;
+				}
+			}
 		}
 	});
 var _user$project$Polyline$decodeChange = function (result) {
@@ -7396,8 +7409,13 @@ var _user$project$Polyline$decodeChange = function (result) {
 };
 var _user$project$Polyline$decode = F2(
 	function (str, precision) {
-		return _user$project$Polyline$decodeChange(
-			A5(_user$project$Polyline$decodeInner, str, precision, 0, 0, 0));
+		var _p3 = A5(_user$project$Polyline$decodeInner, str, precision, 0, 0, 0);
+		if (_p3.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				_user$project$Polyline$decodeChange(_p3._0._0));
+		}
 	});
 var _user$project$Polyline$encodeCoordinateShift = function (coordinate) {
 	return (_elm_lang$core$Native_Utils.cmp(coordinate, 32) > -1) ? A2(
